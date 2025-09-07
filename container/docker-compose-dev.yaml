@@ -6,8 +6,20 @@ services:
 
   text2vec_service:
     ports:
-      - 8010:8010
+      - "${TEXT2VEC_PORT}:${TEXT2VEC_PORT}"
 
   vecdb_service:
     ports:
-      - 8024:8024
+      - "${VECDB_PORT}:${OLLAMA_PORT}"
+
+  ollama:
+    ports:
+      - "${OLLAMA_PORT}:${OLLAMA_PORT}"
+
+  ticket_db:
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+
+  chat_service:
+    ports:
+      - "${CHAT_APP_PORT}:${CHAT_APP_PORT}"
