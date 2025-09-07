@@ -1,0 +1,13 @@
+services:
+  weaviate:
+    ports:
+      - 8020:8020
+      - 50051:50051
+
+  text2vec_service:
+    ports:
+      - 8010:8010
+
+  vecdb_service:
+    ports:
+      - 8024:8024
