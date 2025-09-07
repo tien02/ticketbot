@@ -23,3 +23,7 @@ services:
   chat_service:
     ports:
       - "${CHAT_APP_PORT}:${CHAT_APP_PORT}"
+
+  media2text_service:
+    ports:
+      - "${MEDIA2TEXT_PORT}:${MEDIA2TEXT_PORT}"
