@@ -189,6 +189,35 @@ services:
     networks:
       - vnet
 
+  media2text_service:
+    build:
+      context: ../services/media2text_service
+      dockerfile: Dockerfile
+    env_file: ../services/media2text_service/.env
+    container_name: ${MEDIA2TEXT_CONTAINER_NAME}
+    command: ["python", "app/serve_m2t.py"]
+    restart: unless-stopped
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${MEDIA2TEXT_PORT}/health"]
+      interval: 5s
+      timeout: 2s
+      retries: 1000
+      start_period: 60s
+    labels:
+      - "logging=promtail"
+    depends_on:
+      text2vec_service:
+        condition: service_healthy
+      ticket_db:
+        condition: service_healthy
+      vecdb_service:
+        condition: service_healthy
+    networks:
+      - vnet
+
 networks:
   vnet:
 
