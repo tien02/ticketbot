@@ -8,7 +8,25 @@ class IntentClassifier(LLM):
     Classify the following message into one of these categories:
     - FAQ: asking for information about policies, services, or general inquiries
     - After-Service: requesting changes, cancellations, or support for existing bookings
-    - Booking: making new reservations or inquiries about availability
+    For example:
+
+    Message: Làm thế nào để đặt vé máy bay trên Vexere?
+    Category: FAQ
+
+    Message: Làm sao để kiểm tra thông tin vé đã đặt?
+    Category: FAQ
+
+    Message: Tại sao không thể check-in online?
+    Category: FAQ
+
+    Message: Có thể dời chuyến đi của tôi sang tuần sau.
+    Category: After-Service
+
+    Message: Đổi vé sang ngày hôm sau giúp tôi.
+    Category: After-Service
+
+    Message: Tôi muốn hủy vé đặt chỗ.
+    Category: After-Service
 
     Message: "{user_message}"
     \nRespond with only one of the categories.
@@ -17,7 +35,6 @@ class IntentClassifier(LLM):
     PATTERNS = {
         "FAQ": r"\bFAQ\b[^\w]*",
         "After-Service": r"\bAfter[- ]?Service\b[^\w]*",
-        "Booking": r"\bBooking\b[^\w]*",
     }
 
     def classify(self, user_message: str) -> str:

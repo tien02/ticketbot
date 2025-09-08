@@ -38,6 +38,10 @@
 
 Ticketbot is a booking ticket chatbot designed to process user requests and store relevant information in an SQL database. It’s built with modular services for better organization and maintainability.
 
+<p align="center">
+  <img src="assets/demo.png" alt="Demo" width="250"/>
+</p>
+
 ---
 
 ## Features
@@ -98,16 +102,17 @@ Please have a look at [CODE_REVIEW.md](CODE_REVIEW.md).
 
 * View Grafana logs at `http://localhost:3000`
 
+* Test chat app in [app.html](app.html)
+
 ---
 
 ## Testing
 
 - Each service includes unit tests under `services/<service_name>/test/`.
 - Test the end-to-end service with scripts in the `test/` directory. Run the following command to insert the dummy data:
-
-```bash
-python test/insert_test_data.py
-```
+  ```bash
+  python test/insert_test_data.py
+  ```
 
 ---
 

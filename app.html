@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TicketBot Chat</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f4f6fb;
+      margin: 0;
+    }
+    .chat-container {
+      width: 420px;
+      max-width: 95%;
+      height: 680px;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 8px 30px rgba(20,20,50,0.08);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* header */
+    .chat-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+    }
+    .chat-header img.logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+    .chat-header .title {
+      font-weight: 600;
+      font-size: 16px;
+    }
+    .chat-header .small {
+      font-size: 12px;
+      color: #666;
+      margin-left: 6px;
+      font-weight: 400;
+    }
+
+    /* chat box */
+    .chat-box {
+      flex: 1;
+      padding: 14px;
+      overflow-y: auto;
+      background: linear-gradient(180deg,#fff, #fbfdff);
+    }
+    .message {
+      display: flex;
+      gap: 8px;
+      margin: 8px 0;
+      align-items: flex-start;
+    }
+    .message.bot {
+      justify-content: flex-start;
+    }
+    .message.user {
+      justify-content: flex-end;
+    }
+
+    .avatar {
+      width: 30px;
+      height: 30px;
+      flex-shrink: 0;
+      border-radius: 6px;
+      object-fit: cover;
+      border: 1px solid #eee;
+    }
+
+    .bubble {
+      padding: 10px 12px;
+      border-radius: 12px;
+      max-width: 72%;
+      word-wrap: break-word;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.03);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .message.bot .bubble {
+      background: #f2f4f7;
+      color: #222;
+      border-bottom-left-radius: 4px;
+    }
+    .message.user .bubble {
+      background: #007bff;
+      color: white;
+      border-bottom-right-radius: 4px;
+      text-align: right;
+    }
+
+    .bubble a {
+      color: inherit;
+      text-decoration: underline;
+    }
+
+    /* input area */
+    .controls {
+      padding: 12px;
+      border-top: 1px solid #eee;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .controls input[type="text"] {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 20px;
+      border: 1px solid #ddd;
+      outline: none;
+      font-size: 14px;
+    }
+    .controls .btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background: #007bff;
+      color: white;
+      font-size: 16px;
+    }
+    .controls label.file-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #eee;
+      cursor: pointer;
+    }
+    .controls input[type="file"] { display:none; }
+
+    .meta-row {
+      display:flex;
+      gap:8px;
+      padding:8px 12px;
+      align-items:center;
+      border-top:1px solid #f0f0f0;
+      background:#fafbfc;
+      font-size:13px;
+    }
+    .meta-row input[type="text"] {
+      padding:6px 8px;
+      border-radius:8px;
+      border:1px solid #ddd;
+      font-size:13px;
+    }
+
+    .small-muted { font-size:12px; color:#666; }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      <img class="logo" src="assets/ticketbot.png" alt="TicketBot logo">
+      <div>
+        <div class="title">TicketBot</div>
+        <div class="small">Booking assistant — audio, image, text</div>
+      </div>
+    </div>
+
+    <div class="chat-box" id="chatBox"></div>
+
+    <!-- meta row: choose user id -->
+    <div class="meta-row">
+      <div class="small-muted">user_id:</div>
+      <input id="userId" type="text" value="U003" style="width:110px">
+      <!-- <div class="small-muted">API:</div>
+      <div style="font-family:monospace; color:#333">http://localhost:8080/process</div> -->
+    </div>
+
+    <div class="controls">
+      <input id="messageInput" type="text" placeholder="Type your message... (press Enter)">
+      <button class="btn" title="Send" id="sendBtn">➤</button>
+      <button class="btn" id="recBtn" title="Record (click to start/stop)">🎤</button>
+      <label class="file-label" title="Attach file (image/audio)">
+        📎
+        <input id="fileInput" type="file" accept="image/*,audio/*">
+      </label>
+    </div>
+  </div>
+
+  <script>
+    // === CONFIG ===
+    const API_URL = "http://localhost:8080/process"; // your backend endpoint
+
+    // === DOM ===
+    const chatBox = document.getElementById("chatBox");
+    const msgInput = document.getElementById("messageInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const recBtn = document.getElementById("recBtn");
+    const fileInput = document.getElementById("fileInput");
+    const userIdInput = document.getElementById("userId");
+
+    // === recording state ===
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let recording = false;
+
+    // append message helper (sender = 'bot'|'user')
+    function appendMessage(text, sender = "bot", fileLink = null) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "message " + (sender === "user" ? "user" : "bot");
+
+      if (sender === "bot") {
+        const img = document.createElement("img");
+        img.className = "avatar";
+        img.src = "assets/ticketbot.png";
+        img.alt = "bot";
+        wrapper.appendChild(img);
+      } else {
+        // spacer so user bubble sits on right
+        const spacer = document.createElement("div");
+        spacer.style.width = "30px";
+        wrapper.appendChild(spacer);
+      }
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      // allow HTML for file links, but escape text otherwise
+      if (typeof text === "string") {
+        bubble.textContent = text;
+      } else {
+        bubble.textContent = JSON.stringify(text);
+      }
+
+      if (fileLink) {
+        const br = document.createElement("br");
+        bubble.appendChild(br);
+        const a = document.createElement("a");
+        a.href = fileLink;
+        a.target = "_blank";
+        a.rel = "noopener";
+        a.textContent = "📎 Attachment";
+        bubble.appendChild(a);
+      }
+
+      wrapper.appendChild(bubble);
+      chatBox.appendChild(wrapper);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // fetch wrapper that shows debug in chat if error / no expected keys
+    async function doPost(formOrBody, isFormData = false) {
+      try {
+        const options = { method: "POST" };
+        if (isFormData) {
+          options.body = formOrBody;
+        } else {
+          options.headers = { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" };
+          options.body = formOrBody;
+        }
+
+        const resp = await fetch(API_URL, options);
+
+        // try parse json
+        let parsed = null;
+        let textFallback = null;
+        try {
+          parsed = await resp.json();
+        } catch (e) {
+          try {
+            textFallback = await resp.text();
+          } catch (e2) {
+            textFallback = null;
+          }
+        }
+
+        if (!resp.ok) {
+          // show HTTP error + possible body
+          const errMsg = `HTTP ${resp.status} ${resp.statusText}` + (parsed ? " - " + JSON.stringify(parsed) : (textFallback ? " - " + textFallback : ""));
+          appendMessage(errMsg, "bot");
+          return;
+        }
+
+        // success
+        if (parsed) {
+          // check common keys
+          const reply = parsed.reply ?? parsed.response ?? parsed.result ?? parsed.answer ?? parsed.message ?? parsed.text ?? null;
+          if (reply) {
+            appendMessage(reply, "bot");
+          } else {
+            // no known key: show entire JSON so you can inspect what backend returned
+            appendMessage(parsed, "bot");
+          }
+        } else if (textFallback) {
+          appendMessage(textFallback, "bot");
+        } else {
+          appendMessage("⚠️ No response body (empty)", "bot");
+        }
+      } catch (err) {
+        appendMessage("⚠️ Network / fetch error: " + err.message, "bot");
+        console.error(err);
+      }
+    }
+
+    // send message (text-only or with file)
+    async function sendMessage(file = null) {
+      const user_id = (userIdInput.value || "U003").trim();
+      const text = msgInput.value.trim();
+
+      if (!text && !file) return; // nothing to send
+
+      // show user message
+      if (file) {
+        appendMessage(text || "📎 Sent a file", "user");
+      } else {
+        appendMessage(text, "user");
+      }
+      msgInput.value = "";
+
+      if (file) {
+        // Build FormData (file + always include user_id; include message if present)
+        const fd = new FormData();
+        fd.append("user_id", user_id);
+        if (text) fd.append("message", text);
+        // the backend test expects the file key name "file"
+        fd.append("file", file, file.name || "upload");
+
+        // send as multipart/form-data
+        await doPost(fd, true);
+      } else {
+        // Send as application/x-www-form-urlencoded to match requests.post(data=...)
+        const params = new URLSearchParams();
+        params.append("user_id", user_id);
+        params.append("message", text);
+        await doPost(params.toString(), false);
+      }
+    }
+
+    // handle file input selection
+    fileInput.addEventListener("change", () => {
+      const f = fileInput.files[0];
+      if (!f) return;
+      sendMessage(f);
+      // reset input so same file can be chosen again if needed
+      fileInput.value = "";
+    });
+
+    // Handle Enter key
+    msgInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    sendBtn.addEventListener("click", () => sendMessage());
+
+    // Recording toggle
+    recBtn.addEventListener("click", async () => {
+      if (!recording) {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          alert("Audio recording is not supported by your browser.");
+          return;
+        }
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          audioChunks = [];
+          mediaRecorder = new MediaRecorder(stream);
+          mediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size) audioChunks.push(e.data); };
+          mediaRecorder.onstop = async () => {
+            const mime = (audioChunks[0] && audioChunks[0].type) ? audioChunks[0].type : "audio/webm";
+            const blob = new Blob(audioChunks, { type: mime });
+            // choose extension by mime if possible
+            const ext = mime.split("/")[1] ? mime.split("/")[1].split(";")[0] : "webm";
+            const filename = `recording.${ext}`;
+            const file = new File([blob], filename, { type: mime });
+            await sendMessage(file);
+          };
+          mediaRecorder.start();
+          recording = true;
+          recBtn.textContent = "⏹";
+          recBtn.style.background = "#e55353";
+        } catch (err) {
+          appendMessage("⚠️ Could not start microphone: " + err.message, "bot");
+        }
+      } else {
+        // stop
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+          mediaRecorder.stop();
+        }
+        recording = false;
+        recBtn.textContent = "🎤";
+        recBtn.style.background = "";
+      }
+    });
+
+    // initial hint message
+    appendMessage("👉 Xin chào! Tôi là chatbot hỗ trợ đặt vé. Bạn có thể trò chuyện trực tiếp với tôi, sử dụng micro để nói, hoặc gửi thêm hình ảnh khi cần nhé", "bot");
+  </script>
+</body>
+</html>

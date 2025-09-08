@@ -43,6 +43,7 @@ async def chat(req: UserMessage):
 
     try:
         answer: str = chat_service.run(req)
+        logger.info(f"[user={req.user_id}] Out: {answer}")
         return {"answer": answer}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
