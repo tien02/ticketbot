@@ -26,7 +26,7 @@ class WorkflowService:
                     raise ValueError("Media2Text service returned no text")
 
                 parts.append(f"With this information: {media_text}")
-                logger.info(f"[user={user_id}] Extracted text from file")
+                logger.info(f"[user={user_id}] Extracted text from file: {media_text}")
 
             except Exception as e:
                 logger.error(f"[user={user_id}] Media2Text error: {e}")
