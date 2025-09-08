@@ -10,7 +10,7 @@ services:
 
   vecdb_service:
     ports:
-      - "${VECDB_PORT}:${OLLAMA_PORT}"
+      - "${VECDB_PORT}:${VECDB_PORT}"
 
   ollama:
     ports:
@@ -27,3 +27,7 @@ services:
   media2text_service:
     ports:
       - "${MEDIA2TEXT_PORT}:${MEDIA2TEXT_PORT}"
+
+  workflow_manager:
+    ports:
+      - "${WORKFLOW_MANAGER_APP_PORT}:${WORKFLOW_MANAGER_APP_PORT}"

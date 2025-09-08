@@ -218,6 +218,36 @@ services:
     networks:
       - vnet
 
+  workflow_manager:
+    build:
+      context: ../services/workflow_manager
+      dockerfile: Dockerfile
+    env_file: ../services/workflow_manager/.env
+    container_name: ${WORKFLOW_MANAGER_CONTAINER_NAME}
+    command: ["python", "app/main.py"]
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:${WORKFLOW_MANAGER_APP_PORT}/health",
+        ]
+      interval: 5s
+      timeout: 2s
+      retries: 1000
+      start_period: 60s
+    labels:
+      - "logging=promtail"
+    depends_on:
+      media2text_service:
+        condition: service_healthy
+      chat_service:
+        condition: service_healthy
+    networks:
+      - vnet
+
 networks:
   vnet:
 
