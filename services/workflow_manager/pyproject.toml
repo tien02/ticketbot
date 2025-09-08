@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chatbot"
+version = "0.1.0"
+description = "Workflow management service"
+requires-python = ">=3.10"
+authors = [{name = "Tien Dang"}]
+
+[tool.setuptools.packages.find]
+exclude = ["*.yaml", "*.yml", "test*", "storage*", "scripts*", "docs*", "dataset*"]
